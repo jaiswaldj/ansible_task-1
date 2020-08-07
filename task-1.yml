@@ -1,0 +1,45 @@
+- hosts: web
+  tasks:
+  - name: Configuring yum for docker
+    yum_repository:
+     name: "docker"
+     baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable/"
+     description: "docker yum repository"
+     gpgcheck: no
+
+  - name: installing docker
+    package:
+     name: "docker-ce-18.09.1-3.el7.x86_64" 
+     state: present
+
+
+  - name: start services of docker
+    service: 
+     name: "docker"
+     state: started
+
+  - command: pip3 install docker
+
+  - name: pull httpd docker image
+    docker_image:
+      name: "httpd"
+      source: pull
+
+  - name: creating directory in managed node
+    file:
+     path: "/ansible-task1"
+     state: directory
+
+  - name: copying webpage from controller node to managed node
+    copy:
+     src: "deepak.html"
+     dest: "/ansible-task1"
+
+  - name: launch one docker conatiner
+    docker_container:
+     name: "deepak"
+     image: "httpd"
+     state: started
+     exposed_ports: 80
+     ports: "3698:80"
+     volumes: "/ansible-task1:/usr/local/apache2/htdocs"
